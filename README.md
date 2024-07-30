@@ -20,3 +20,6 @@ Everything else:
 - Get whatsmeow ```go get go.mau.fi/whatsmeow```
 - Replace png.jpg with your own image
 - Start the program ```go run main``` and scan the QR code with your phone as you would for WhatsApp web
+
+
+To relink a different number delete _login.db_
