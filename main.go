@@ -85,7 +85,7 @@ func main() {
 	}
 
 	var answer string
-	fmt.Print("\nDISCLAIMER: The picture should be 720x720 or smaller.\nWould you like to continue (y/n): ")
+	fmt.Print("\nDISCLAIMER: This program is intended for educational use only. Users must comply with WhatsApp's terms of service and community guidelines. The authors of this program are not affiliated with WhatsApp Inc., and this program is not endorsed or approved by WhatsApp Inc.\nWould you like to continue (y/n): ")
 	_, err = fmt.Scanln(&answer)
 	checkErr(err)
 
