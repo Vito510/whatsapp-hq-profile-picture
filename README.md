@@ -1,3 +1,6 @@
+Created using https://github.com/tulir/whatsmeow
+---
+
 A small program that bypasses some WhatsApp profile picture limitations enabling uncompressed and larger resolution images (up to **720x720**px).
 
 
