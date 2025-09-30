@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
@@ -25,12 +24,13 @@ func main() {
 	// Used example code from https://pkg.go.dev/go.mau.fi/whatsmeow
 	dbLog := waLog.Stdout("Database", "ERROR", true)
 	// Make sure you add appropriate DB connector imports, e.g. github.com/mattn/go-sqlite3 for SQLite
-	container, err := sqlstore.New("sqlite3", "file:login.db?_foreign_keys=on", dbLog)
+
+	container, err := sqlstore.New(context.Background(), "sqlite3", "file:login.db?_foreign_keys=on", dbLog)
 	if err != nil {
 		panic(err)
 	}
 	// If you want multiple sessions, remember their JIDs and use .GetDevice(jid) or .GetAllDevices() instead.
-	deviceStore, err := container.GetFirstDevice()
+	deviceStore, err := container.GetFirstDevice(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -46,6 +46,7 @@ func main() {
 		}
 		for evt := range qrChan {
 			if evt.Event == "code" {
+				// Render the QR code here
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
 			} else {
 				fmt.Println("Login event:", evt.Event)
@@ -59,24 +60,11 @@ func main() {
 		}
 	}
 
-	params := whatsmeow.GetProfilePictureParams{
-		Preview:     false,
-		ExistingID:  "",
-		IsCommunity: false,
-	}
+	// accessing the api instantly after login breaks stuff
+	time.Sleep(time.Second * 3)
 
 	user := client.Store.ID.User
-	server := client.Store.ID.Server
-
 	println("Using:", user)
-	jid, err := types.ParseJID(user + "@" + server)
-	checkErr(err)
-
-	//get url for current pfp
-	info, err := client.GetProfilePictureInfo(jid, &params)
-	checkErr(err)
-
-	println("\nOld PFP:", info.URL)
 
 	image, err := os.ReadFile("pfp.jpg")
 	if err != nil {
@@ -85,7 +73,7 @@ func main() {
 	}
 
 	var answer string
-	fmt.Print("\nDISCLAIMER: This program is intended for educational use only. Users must comply with WhatsApp's terms of service and community guidelines. The authors of this program are not affiliated with WhatsApp Inc., and this program is not endorsed or approved by WhatsApp Inc.\nWould you like to continue (y/n): ")
+	fmt.Println("\nDISCLAIMER: This program is intended for educational use only. Users must comply with WhatsApp's terms of service and community guidelines. The authors of this program are not affiliated with WhatsApp Inc., and this program is not endorsed or approved by WhatsApp Inc.\nWould you like to continue (y/n): ")
 	_, err = fmt.Scanln(&answer)
 	checkErr(err)
 
@@ -100,23 +88,10 @@ func main() {
 
 	println("\nUpdated profile picture")
 
-	//get url for new pfp
-	info, err = client.GetProfilePictureInfo(jid, &params)
-	checkErr(err)
-
-	println("\nNew PFP:", info.URL)
-
 	//wait
 	println("\nDone!")
 	_, _ = fmt.Scanln(&answer)
 
 	client.Disconnect()
 	os.Exit(0)
-
-	// Listen to Ctrl+C (you can also do something else that prevents the program from exiting)
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
-
-	client.Disconnect()
 }
