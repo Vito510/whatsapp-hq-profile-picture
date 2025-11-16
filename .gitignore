@@ -1,3 +1,4 @@
 build/*
 *.zip
 login.db
+.idea
