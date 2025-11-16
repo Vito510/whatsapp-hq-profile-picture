@@ -83,7 +83,7 @@ func main() {
 	}
 
 	//update pfp
-	_, err = client.SetGroupPhoto(types.EmptyJID, image)
+	_, err = client.SetGroupPhoto(context.Background(), types.EmptyJID, image)
 	checkErr(err)
 
 	println("\nUpdated profile picture")
